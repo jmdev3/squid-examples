@@ -16,11 +16,10 @@ dotenv.config();
 
 const nativeAddress = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 const aaveL2PoolAddress = "0x794a61358D6845594F94dc1DB02A252b5b4814aD";
-const arbUsdcAddress = "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
+const arbWETHAddress = "0x82af49447d8a07e3bd95bd0d56f35241523fbab1";
 
 const bscProvider = new JsonRpcProvider("https://binance.llamarpc.com");
-const provider = new JsonRpcProvider("https://arbitrum.llamarpc.com");
-const signer = new Wallet(process.env.PK as string, provider);
+const signer = new Wallet(process.env.PK as string, bscProvider);
 
 const aavePoolInterface = new Interface(aaveL2PoolABI);
 const erc20Interface = new Interface(erc20ABI);
@@ -29,9 +28,9 @@ const approvalData = erc20Interface.encodeFunctionData("approve", [
   aaveL2PoolAddress,
   0,
 ]);
-const depositData = aavePoolInterface.encodeFunctionData(
+const supplyData = aavePoolInterface.encodeFunctionData(
   "supply(address,uint256,address,uint16)",
-  [arbUsdcAddress, 0, signer.address, 0]
+  [arbWETHAddress, 0, signer.address, 0]
 );
 
 const main = async () => {
@@ -44,28 +43,27 @@ const main = async () => {
     await squidSdk.init();
 
     const params = {
-      // fromChain: "56",
-      fromChain: "42161",
+      fromChain: "56",
       fromToken: nativeAddress,
       fromAddress: signer.address,
-      fromAmount: "300000000000000",
+      fromAmount: "2000000000000000",
       toChain: "42161",
-      toToken: arbUsdcAddress,
+      toToken: arbWETHAddress,
       toAddress: signer.address,
       postHook: {
         chainType: ChainType.EVM,
         provider: "AAVE",
-        description: "Supply USDC Liquidity to AAVE protocol",
+        description: "Supply WETH Liquidity to AAVE protocol",
         logoURI: "",
         calls: [
           {
             chainType: ChainType.EVM,
             callType: SquidCallType.FULL_TOKEN_BALANCE,
-            target: arbUsdcAddress,
+            target: arbWETHAddress,
             value: "0",
             callData: approvalData,
             payload: {
-              tokenAddress: arbUsdcAddress,
+              tokenAddress: arbWETHAddress,
               inputPos: 1,
             },
             estimatedGas: "30000",
@@ -75,9 +73,9 @@ const main = async () => {
             callType: SquidCallType.FULL_TOKEN_BALANCE,
             target: aaveL2PoolAddress,
             value: "0",
-            callData: depositData,
+            callData: supplyData,
             payload: {
-              tokenAddress: arbUsdcAddress,
+              tokenAddress: arbWETHAddress,
               inputPos: 1,
             },
             estimatedGas: "300000",
