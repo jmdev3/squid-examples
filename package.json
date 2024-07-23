@@ -9,7 +9,9 @@
   "description": "",
   "dependencies": {
     "@0xsquid/sdk": "^2.8.23",
+    "@0xsquid/squid-types": "^0.1.92",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
   }
